@@ -4,6 +4,32 @@
     <meta charset="UTF-8">
     <title>Photo Groove</title>
     <link rel="stylesheet" href="https://elm-in-action.com/styles.css">
+    <link rel="stylesheet" href="https://elm-in-action.com/range-slider.css">
+    <script type="text/javascript" src="https://elm-in-action.com/range-slider.js"></script>
+    <script>
+        class RangeSlider extends HTMLElement {
+            connectedCallback() {
+                const input = document.createElement("input");
+                this.appendChild(input);
+
+                const jsr = new JSR(input, {
+                    max: this.max,
+                    values: [this.val],
+                    sliders: 1,
+                    grid: false
+                });
+
+                const rangeSliderNode = this;
+                jsr.addEventListener("update", function(elem, value) {
+                    var event = new CustomEvent("slide", {
+                        detail: {userSlidTo: value}
+                    });
+                    rangeSliderNode.dispatchEvent(event);
+                });
+            }
+        }
+        window.customElements.define("range-slider", RangeSlider);
+    </script>
 </head>
 <body>
 <div id="app"></div>
