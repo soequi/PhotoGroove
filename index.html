@@ -1,4 +1,14 @@
 <!DOCTYPE html>
+<!-- 1. Defines a RangeSlider class to be the implementation for <range-slider> -->
+<!-- 2. The connectedCallback() method gets called whenever <range-slider> is added to the DOM. -->
+<!-- 3. Creates an <input> and adds it to the DOM -->
+<!-- 4. Uses the JSR library to initialize the <input> -->
+<!-- 5. When the slider updates, dispatches a CustomEvent that elm can listen for -->
+<!-- 6. Defines <range-slider> to use the RangeSlider class for its logic -->
+<!-- 7. Passes Pasta.version in as a flag to the elm program -->
+<!-- 8. Run this code when the elm runtime sends a setFilters Cmd -->
+<!-- 9. Uses requestAnimationFrame to wait for view to be reflected in the real DOM -->
+<!-- 10. When Pasta's activity listener fires, sends activity to te activityChanges Sub -->
 <html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
@@ -7,12 +17,12 @@
     <link rel="stylesheet" href="https://elm-in-action.com/range-slider.css">
     <script type="text/javascript" src="https://elm-in-action.com/range-slider.js"></script>
     <script>
-        class RangeSlider extends HTMLElement {
-            connectedCallback() {
-                const input = document.createElement("input");
-                this.appendChild(input);
+        class RangeSlider extends HTMLElement { // 1
+            connectedCallback() { // 2
+                const input = document.createElement("input"); // 3
+                this.appendChild(input); // 3
 
-                const jsr = new JSR(input, {
+                const jsr = new JSR(input, { // 4
                     max: this.max,
                     values: [this.val],
                     sliders: 1,
@@ -20,7 +30,7 @@
                 });
 
                 const rangeSliderNode = this;
-                jsr.addEventListener("update", function(elem, value) {
+                jsr.addEventListener("update", function(elem, value) { // 5
                     var event = new CustomEvent("slide", {
                         detail: {userSlidTo: value}
                     });
@@ -28,7 +38,7 @@
                 });
             }
         }
-        window.customElements.define("range-slider", RangeSlider);
+        window.customElements.define("range-slider", RangeSlider); // 6
     </script>
 </head>
 <body>
@@ -39,15 +49,15 @@
  const app = Elm.PhotoGroove.init({
         node: document.getElementById("app"),
         flags: Pasta.version
- });
+ }); // 7
 
- app.ports.setFilters.subscribe(function(options) {
-        requestAnimationFrame(function() {
+ app.ports.setFilters.subscribe(function(options) { // 8
+        requestAnimationFrame(function() { // 9
             Pasta.apply(document.getElementById("main-canvas"), options);
         });
     });
 
- Pasta.addActivityListener(function(activity) {
+ Pasta.addActivityListener(function(activity) { // 10
      console.log("Got some acivity to send to Elm:", activity);
      app.ports.activityChanges.send(activity);
  });

@@ -11,6 +11,14 @@ import Json.Encode as Encode
 import Random
 
 
+
+-- Summary:
+-- 1. Calls our rangeSlider function. It's a plain function like any other, but resembles the usual functions we use to create Html values
+-- 2. Creates app.ports.setFilters and app.ports.activityChanges. The elm runtime will create the implementation of setFilters and activityChanges.
+-- 3. Create <range-slider> element.
+-- 4. Handles the custom "userSlidTo" event that <range-slider> will emit.
+
+
 type alias Photo =
     { url : String
     , size : Int
@@ -18,10 +26,14 @@ type alias Photo =
     }
 
 
-port setFilters : FilterOptions -> Cmd msg
+port setFilters :
+    FilterOptions
+    -> Cmd msg -- 2
 
 
-port activityChanges : (String -> msg) -> Sub msg
+port activityChanges :
+    (String -> msg)
+    -> Sub msg -- 2
 
 
 type alias FilterOptions =
@@ -110,6 +122,7 @@ viewFilter toMsg name magnitude =
     div [ class "filter-slider" ]
         [ label [] [ text name ]
         , rangeSlider
+            -- 1
             [ Attr.max "11"
             , Attr.property "val" (Encode.int magnitude)
             , onSlide toMsg
@@ -289,6 +302,7 @@ main =
         , subscriptions = subscriptions
         }
 
+
 init : Float -> ( Model, Cmd Msg )
 init flags =
     let
@@ -297,16 +311,23 @@ init flags =
     in
     ( { initialModel | activity = activity }, initialCmd )
 
+
 subscriptions : Model -> Sub Msg
 subscriptions model =
     activityChanges GotActivity
 
-rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
+
+rangeSlider :
+    List (Attribute msg)
+    -> List (Html msg)
+    -> Html msg -- 3
 rangeSlider attributes children =
     node "range-slider" attributes children
 
 
-onSlide : (Int -> msg) -> Attribute msg
+onSlide :
+    (Int -> msg)
+    -> Attribute msg -- 4
 onSlide toMsg =
     at [ "detail", "userSlidTo" ] int
         |> Json.Decode.map toMsg
