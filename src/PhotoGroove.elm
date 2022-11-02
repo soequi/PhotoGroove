@@ -1,11 +1,11 @@
-module PhotoGroove exposing (main)
+port module PhotoGroove exposing (main)
 
 import Browser
-import Html exposing (Attribute, Html, button, div, h1, h3, img, input, label, li, node, text)
+import Html exposing (Attribute, Html, button, canvas, div, h1, h3, img, input, label, li, node, text)
 import Html.Attributes as Attr exposing (class, classList, id, name, src, title, type_)
-import Html.Events exposing (onClick, on)
+import Html.Events exposing (on, onClick)
 import Http
-import Json.Decode exposing (Decoder, int, list, string, succeed, at)
+import Json.Decode exposing (Decoder, at, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 import Json.Encode as Encode
 import Random
@@ -15,6 +15,15 @@ type alias Photo =
     { url : String
     , size : Int
     , title : String
+    }
+
+
+port setFilters : FilterOptions -> Cmd msg
+
+
+type alias FilterOptions =
+    { url : String
+    , filters : List { name : String, amount : Float }
     }
 
 
@@ -90,7 +99,6 @@ view model =
                 [ text ("Error: " ++ errorMessage) ]
 
 
-
 viewFilter : (Int -> Msg) -> String -> Int -> Html Msg
 viewFilter toMsg name magnitude =
     div [ class "filter-slider" ]
@@ -113,17 +121,17 @@ viewLoaded photos selectedUrl model =
         [ text "Surprise Me!" ]
     , div [ class "filters" ]
         [ viewFilter SlidHue "Hue" model.hue
-        , viewFilter SlidHue "Ripple" model.ripple
-        , viewFilter SlidHue "Noise" model.noise
+        , viewFilter SlidRipple "Ripple" model.ripple
+        , viewFilter SlidNoise "Noise" model.noise
         ]
     , h3 [] [ text "Thumbnail Size:" ]
     , div [ id "choose-size" ]
         (List.map viewSizeChooser [ Small, Medium, Large ])
     , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
         (List.map (viewThumbnail selectedUrl) photos)
-    , img
+    , canvas
         [ class "large"
-        , src (urlPrefix ++ "large/" ++ selectedUrl)
+        , id "main-canvas"
         ]
         []
     ]
@@ -185,9 +193,16 @@ update msg model =
         GotPhotos (Ok photos) ->
             case photos of
                 first :: rest ->
-                    ( { model | status = Loaded photos first.url }
-                    , Cmd.none
-                    )
+                    applyFilters
+                        { model
+                            | status =
+                                case List.head photos of
+                                    Just photo ->
+                                        Loaded photos photo.url
+
+                                    Nothing ->
+                                        Loaded [] ""
+                        }
 
                 [] ->
                     ( { model | status = Errored "0 photos found!" }, Cmd.none )
@@ -196,14 +211,10 @@ update msg model =
             ( { model | status = Errored "Server Error!" }, Cmd.none )
 
         GotRandomPhoto photo ->
-            ( { model | status = selectUrl photo.url model.status }
-            , Cmd.none
-            )
+            applyFilters { model | status = selectUrl photo.url model.status }
 
         ClickedPhoto url ->
-            ( { model | status = selectUrl url model.status }
-            , Cmd.none
-            )
+            applyFilters { model | status = selectUrl url model.status }
 
         ClickedSize size ->
             ( { model | chosenSize = size }, Cmd.none )
@@ -225,16 +236,36 @@ update msg model =
                     ( model, Cmd.none )
 
         SlidHue hue ->
-            ( { model | hue = hue }
-            , Cmd.none)
+            applyFilters { model | hue = hue }
 
         SlidRipple ripple ->
-            ( { model | ripple = ripple }
-            , Cmd.none )
+            applyFilters { model | ripple = ripple }
 
         SlidNoise noise ->
-            ( { model | noise = noise }
-            , Cmd.none)
+            applyFilters { model | noise = noise }
+
+
+applyFilters : Model -> ( Model, Cmd Msg )
+applyFilters model =
+    case model.status of
+        Loaded photos selectedUrl ->
+            let
+                filters =
+                    [ { name = "Hue", amount = toFloat model.hue / 11 }
+                    , { name = "Ripple", amount = toFloat model.ripple / 11 }
+                    , { name = "Noise", amount = toFloat model.noise / 11 }
+                    ]
+
+                url =
+                    urlPrefix ++ "large/" ++ selectedUrl
+            in
+            ( model, setFilters { url = url, filters = filters } )
+
+        Loading ->
+            ( model, Cmd.none )
+
+        Errored errorMessage ->
+            ( model, Cmd.none )
 
 
 main : Program () Model Msg
