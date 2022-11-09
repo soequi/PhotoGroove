@@ -46,21 +46,9 @@
 <script src="https://elm-in-action.com/pasta.js"></script>
 <script src="app.js"></script>
 <script>
- const app = Elm.PhotoGroove.init({
-        node: document.getElementById("app"),
-        flags: Pasta.version
+ const app = Elm.PhotoFolders.init({
+        node: document.getElementById("app")
  }); // 7
-
- app.ports.setFilters.subscribe(function(options) { // 8
-        requestAnimationFrame(function() { // 9
-            Pasta.apply(document.getElementById("main-canvas"), options);
-        });
-    });
-
- Pasta.addActivityListener(function(activity) { // 10
-     console.log("Got some acivity to send to Elm:", activity);
-     app.ports.activityChanges.send(activity);
- });
 </script>
 </body>
 </html>
