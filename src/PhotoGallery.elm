@@ -1,7 +1,6 @@
-port module PhotoGroove exposing (Model, Msg(..), Photo, Status(..), initialModel, main, photoDecoder, update, urlPrefix, view)
+port module PhotoGallery exposing (Model, Msg, init, subscriptions, update, view)
 
-import Browser
-import Html exposing (Attribute, Html, button, canvas, div, h1, h3, img, input, label, li, node, text)
+import Html exposing (Attribute, Html, button, canvas, div, h3, img, input, label, node, text)
 import Html.Attributes as Attr exposing (class, classList, id, name, src, title, type_)
 import Html.Events exposing (on, onClick)
 import Http
@@ -134,8 +133,7 @@ viewFilter toMsg name magnitude =
 
 viewLoaded : List Photo -> String -> Model -> List (Html Msg)
 viewLoaded photos selectedUrl model =
-    [ h1 [] [ text "Photo Groove" ]
-    , button
+    [ button
         [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
     , div [ class "activity" ] [ text model.activity ]
@@ -291,16 +289,6 @@ applyFilters model =
 
         Errored errorMessage ->
             ( model, Cmd.none )
-
-
-main : Program Float Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
 
 
 init : Float -> ( Model, Cmd Msg )
