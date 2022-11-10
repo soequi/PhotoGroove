@@ -7173,15 +7173,6 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
 var $elm$core$Tuple$pair = F2(
 	function (a, b) {
 		return _Utils_Tuple2(a, b);
@@ -7301,15 +7292,7 @@ var $author$project$PhotoGallery$update = F2(
 							_Utils_update(
 								model,
 								{
-									status: function () {
-										var _v2 = $elm$core$List$head(photos);
-										if (_v2.$ === 'Just') {
-											var photo = _v2.a;
-											return A2($author$project$PhotoGallery$Loaded, photos, photo.url);
-										} else {
-											return A2($author$project$PhotoGallery$Loaded, _List_Nil, '');
-										}
-									}()
+									status: A2($author$project$PhotoGallery$Loaded, photos, first.url)
 								}));
 					} else {
 						return _Utils_Tuple2(
@@ -7353,13 +7336,13 @@ var $author$project$PhotoGallery$update = F2(
 						{chosenSize: size}),
 					$elm$core$Platform$Cmd$none);
 			case 'ClickedSurpriseMe':
-				var _v3 = model.status;
-				switch (_v3.$) {
+				var _v2 = model.status;
+				switch (_v2.$) {
 					case 'Loaded':
-						if (_v3.a.b) {
-							var _v4 = _v3.a;
-							var firstPhoto = _v4.a;
-							var otherPhotos = _v4.b;
+						if (_v2.a.b) {
+							var _v3 = _v2.a;
+							var firstPhoto = _v3.a;
+							var otherPhotos = _v3.b;
 							return A2(
 								$elm$core$Tuple$pair,
 								model,
@@ -7373,7 +7356,6 @@ var $author$project$PhotoGallery$update = F2(
 					case 'Loading':
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 					default:
-						var errorMessage = _v3.a;
 						return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 			case 'SlidHue':

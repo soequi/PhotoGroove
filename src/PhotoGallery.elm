@@ -25,14 +25,9 @@ type alias Photo =
     }
 
 
-port setFilters :
-    FilterOptions
-    -> Cmd msg -- 2
+port setFilters : FilterOptions -> Cmd msg
 
-
-port activityChanges :
-    (String -> msg)
-    -> Sub msg -- 2
+port activityChanges : (String -> msg)-> Sub msg
 
 
 type alias FilterOptions =
@@ -121,7 +116,6 @@ viewFilter toMsg name magnitude =
     div [ class "filter-slider" ]
         [ label [] [ text name ]
         , rangeSlider
-            -- 1
             [ Attr.max "11"
             , Attr.property "val" (Encode.int magnitude)
             , onSlide toMsg
@@ -216,16 +210,7 @@ update msg model =
         GotPhotos (Ok photos) ->
             case photos of
                 first :: rest ->
-                    applyFilters
-                        { model
-                            | status =
-                                case List.head photos of
-                                    Just photo ->
-                                        Loaded photos photo.url
-
-                                    Nothing ->
-                                        Loaded [] ""
-                        }
+                    applyFilters { model | status = Loaded photos first.url }
 
                 [] ->
                     ( { model | status = Errored "0 photos found!" }, Cmd.none )
@@ -255,7 +240,7 @@ update msg model =
                 Loading ->
                     ( model, Cmd.none )
 
-                Errored errorMessage ->
+                Errored _ ->
                     ( model, Cmd.none )
 
         SlidHue hue ->

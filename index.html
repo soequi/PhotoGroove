@@ -50,6 +50,16 @@
         flags: Pasta.version,
         node: document.getElementById("app")
  }); // 7
+
+ app.ports.setFilters.subscribe(function(options) {
+    requestAnimationFrame(function() {
+        Pasta.apply(document.getElementById("main-canvas"), options);
+    });
+ });
+
+ Pasta.addActivityListener(function(activity) {
+        app.ports.activityChanges.send(activity);
+ });
 </script>
 </body>
 </html>
